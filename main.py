@@ -3,7 +3,7 @@ import print_table
 
 while True:
     option = input("Вакансии или Статистика: ")
-
+    dev = "not bug"
     if option == "Статистика":
         params = generate_files.InputConnect()
         vacs = generate_files.DataSet(params.file_name).vacancies_objects
