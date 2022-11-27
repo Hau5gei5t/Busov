@@ -1,0 +1,81 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Report</title>
+    <style>
+		*{
+			text-align: center;
+            font-family: Verdana;
+		}
+        h1{
+            font-size: 2.5em;
+        }
+        h2{
+            font-size: 2em;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+
+        }
+        th,td {
+            text-align: center;
+            padding: 5px;
+            font-size: larger;
+        }
+    </style>
+</head>
+<body>
+    <h1>Аналитика по зарплатам и городам для профессии {{prof}}</h1>
+    <img src="C:\Users\Artem\PycharmProjects\pythonProject\graph.png">
+    <h2>Статистика по годам</h2>
+    <table>
+        <tr>
+            <th>{{headers1[0]}}</th>
+            <th>{{headers1[1]}}</th>
+            <th>{{headers1[2]}}</th>
+            <th>{{headers1[3]}}</th>
+            <th>{{headers1[4]}}</th>
+        </tr>
+        {% for year, value in data[0].items() %}
+            <tr>
+                <td>{{year}}</td>
+                <td>{{value}}</td>
+                <td>{{data[2][year]}}</td>
+                <td>{{data[1][year]}}</td>
+                <td>{{data[3][year]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <h2>Статистика по городам</h2>
+    <table style="float: left;  width: 49%">
+        <tr>
+            <th>{{headers2[0]}}</th>
+            <th>{{headers2[1]}}</th>
+        </tr>
+        {% for city, count in data[4].items() %}
+            <tr>
+                <td>{{city}}</td>
+                <td>{{count}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <table style="float: left; margin-left: 15px; width: 49%">
+        <tr>
+            <th>{{headers2[2]}}</th>
+            <th>{{headers2[3]}}</th>
+        </tr>
+        {% for city, count in data[5].items() %}
+            <tr>
+                <td>{{city}}</td>
+                {% set persent = (count*100)|round(2)|string|replace(".",",") %}
+                <td>{{[persent,"%"]|join}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
