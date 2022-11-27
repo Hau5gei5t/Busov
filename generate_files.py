@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from jinja2 import Environment, FileSystemLoader
 import pdfkit
+import os.path
+
 
 
 def set_column_w(ws):
@@ -148,9 +150,12 @@ class Report:
         plt.savefig("graph.png")
 
     def generate_pdf(self):
+        if not os.path.exists("graph.png"):
+            Report.generate_image(self)
         headers1 = ["Год", "Средняя зарплата", f"Средняя зарплата - {self.data[6]}", "Количество вакансий",
                     f"Количество вакансий - {self.data[6]}"]
         headers2 = ["Город", "Уровень зарплат", "Город", "Доля вакансий"]
+        image = os.path.abspath("graph.png")
 
         env = Environment(loader=FileSystemLoader('.'))
         template = env.get_template("pdf_template.html")
@@ -158,7 +163,8 @@ class Report:
         pdf_template = template.render({'prof': self.data[6],
                                         "headers1": headers1,
                                         "headers2": headers2,
-                                        "data": self.data
+                                        "data": self.data,
+                                        "image": image
                                         })
 
         config = pdfkit.configuration(wkhtmltopdf=r'I:\wkhtmltopdf\bin\wkhtmltopdf.exe')
@@ -320,6 +326,5 @@ class Salary:
 
     def get_salary_ru(self):
         return self.salary_ru
-
 
 
