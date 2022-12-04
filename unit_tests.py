@@ -42,32 +42,32 @@ class InputConnectTestCase(unittest.TestCase):
 
     def test_filter_table(self):
         params = print_table.InputConnect()
-        vacancies = print_table.DataSet("vacancies.csv")
+        vacancies = print_table.DataSet("test_vacancies.csv")
         params.filter_dict = ["Название", "Инженер - механик / Начинающий Специалист"]
         a = params.filter_table(vacancies.vacancies_objects)
         self.assertEqual(len(a), 3)
 
     def test_fill_years(self):
-        a = print_table.DataSet.parse_row("vacancies.csv")
+        a = print_table.DataSet.parse_row("test_vacancies.csv")
         b = generate_files.InputConnect.fill_years(a, set())
         self.assertEqual(len(b), 2)
     def test_prepare_vacs_by_cities(self):
-        a = print_table.DataSet.parse_row("vacancies.csv")
+        a = print_table.DataSet.parse_row("test_vacancies.csv")
         b = generate_files.InputConnect.prepare_vacs_by_cities(a,{"Новочеркасск":2,"Москва":1})
         self.assertEqual(b,{'Новочеркасск': 0.6667, 'Москва': 0.3333})
 
 
 class DataSetTestCase(unittest.TestCase):
     def test_parse_row_regex(self):
-        a = print_table.DataSet.parse_row("vacancies.csv")
+        a = print_table.DataSet.parse_row("test_vacancies.csv")
         self.assertNotRegex(a[0].description, r'\<[^>]*\>')
 
     def test_parse_row_skills(self):
-        a = print_table.DataSet.parse_row("vacancies.csv")
+        a = print_table.DataSet.parse_row("test_vacancies.csv")
         self.assertEqual(len(a[0].key_skills), 2)
 
     def test_parse_row_name(self):
-        a = print_table.DataSet.parse_row("vacancies.csv")
+        a = print_table.DataSet.parse_row("test_vacancies.csv")
         self.assertEqual(a[0].name, "Инженер - механик / Начинающий Специалист")
 
 
