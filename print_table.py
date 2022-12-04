@@ -62,6 +62,8 @@ class DataSet:
 
         Returns:
             list: Возвращает список объектов Vacancy
+        >>> len(DataSet.parse_row("test_vacancies.csv")[0].key_skills)
+        2
         """
         name, rows = DataSet.сsv_reader(file_name)
         result = []
