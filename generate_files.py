@@ -1,5 +1,7 @@
 import csv
 import datetime
+import re
+
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, Side
 from openpyxl.styles.numbers import FORMAT_PERCENTAGE_00
@@ -352,7 +354,7 @@ class InputConnect:
         years = InputConnect.fill_years(data, years)
         salary_by_years, vac_counts_by_years, vac_salary_by_years, vacs_by_years = InputConnect.create_dicts(years)
         for vac in data:
-            year = int(datetime.datetime.strptime(vac.published_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y"))
+            year = InputConnect.date_formatting_v1(vac)
             salary_by_years[year].append(vac.salary.get_salary_ru())
             vacs_by_years[year] += 1
             if prof in vac.name:
@@ -366,6 +368,29 @@ class InputConnect:
         vacs_by_cities = InputConnect.prepare_vacs_by_cities(data, vacs_dict)
         return salary_by_cities, salary_by_years, vac_counts_by_years, vac_salary_by_years, vacs_by_cities, \
             vacs_by_years
+
+    # @staticmethod
+    # def date_formatting_main(vac):
+    #     year = int(datetime.datetime.strptime(vac.published_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y"))
+    #     return year
+
+    @staticmethod
+    def date_formatting_v1(vac):
+        """
+        Получает из строки год
+        Args:
+            vac (Vacancy): Объект Vacancy
+
+        Returns:
+            int: год в числовом представлении
+        """
+        year = int(vac.published_at[:4])
+        return year
+
+    # @staticmethod
+    # def date_formatting_v2(vac):
+    #     year = int(re.findall(r'20[0-9][0-9]',vac.published_at)[0])
+    #     return year
 
     @staticmethod
     def fill_years(data, years):
