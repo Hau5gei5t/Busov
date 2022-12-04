@@ -5,12 +5,31 @@ from prettytable import PrettyTable
 
 
 class DataSet:
+    """
+    Класс для подготовки данных для дальнейшего использования.
+    Attributes:
+        file_name (str): Название файла
+    """
     def __init__(self, file_name):
+        """Инициализирует объект DataSet
+
+        Args:
+            file_name (str): Название файла
+        """
         self.file_name = file_name
         self.vacancies_objects = DataSet.parse_row(file_name)
 
     @staticmethod
     def сsv_reader(file_name):
+        """
+        Обрабатывает csv файл, пропуская незаполенные строки
+
+        Args:
+            file_name (str): Название файла
+
+        Returns:
+            list, list: Список названий заголовков, Список вакансий
+        """
         file_csv = open(file_name, encoding="utf_8_sig")
         reader_csv = csv.reader(file_csv)
         list_data = [x for x in reader_csv]
@@ -21,6 +40,12 @@ class DataSet:
 
     @staticmethod
     def check_file(list_data):
+        """
+        Проверяет файл на пустоту или отсутствие данных и если это подтведилось - выходит из программы
+
+        Args:
+            list_data (list): Все строки в файле
+        """
         if len(list_data) == 0:
             print("Пустой файл")
             exit()
@@ -30,6 +55,14 @@ class DataSet:
 
     @staticmethod
     def parse_row(file_name):
+        """
+        Парсит каждый пункт професси от лишних пробелов, html тегов и преобразует строку навыков в список
+        Args:
+            file_name (str): Название файла
+
+        Returns:
+            list: Возвращает список объектов Vacancy
+        """
         name, rows = DataSet.сsv_reader(file_name)
         result = []
         for row in rows:
@@ -47,22 +80,47 @@ class DataSet:
         return result
 
     @staticmethod
-    def translate_row(new_row, x):
-        if x == "salary_gross" or x == "premium":
-            new_row[x] = new_row[x].replace("False", "Нет")
-            new_row[x] = new_row[x].replace("True", "Да")
-        if x == "experience_id":
-            new_row[x] = ru_exp[new_row[x]]
+    def translate_row(new_row, word):
+        """
+        Переводит пункты salary_gross, premium, experience_id на русский язык
+        Args:
+            new_row (dict): Словарь профессии
+            word (str): Пункт в профессии
+        """
+        if word == "salary_gross" or word == "premium":
+            new_row[word] = new_row[word].replace("False", "Нет")
+            new_row[word] = new_row[word].replace("True", "Да")
+        if word == "experience_id":
+            new_row[word] = ru_exp[new_row[word]]
 
 
 class InputConnect:
+    """
+    Класс для получения, обработки и печати данных необходимых пользователю
+    Attributes:
+        file_name (str): Название файла
+        filter_dict (list[str]): Параметр фильтрации
+        sort_parameter (str): Параметр сортировки
+        is_reverse_sort (str): Обратный порядок сортировки
+        from_to (str | list[str]): Диапазон вывода
+        show_title (str | list[str]): Требуемые столбцы
+    """
     def __init__(self):
+        """
+        Инициализирует класс InputConnect
+        """
         self.file_name, self.filter_dict, \
         self.sort_parameter, self.is_reverse_sort, \
         self.from_to, self.show_title = InputConnect.get_params()
 
     @staticmethod
     def get_params():
+        """
+        Получает на вход данные введенные пользователем, обрабатывает и возвращает их
+        Returns:
+            str, str, str, str, list[str], list[str] : Название файла, Параметр фильтрации, Параметр сортировки,
+            Обратный порядок сортировки, Диапазон вывода, Требуемые столбцы
+        """
         file_name = input("Введите название файла: ")
         filter_dict = input("Введите параметр фильтрации: ")
         sort_parameter = input("Введите параметр сортировки: ")
@@ -74,6 +132,17 @@ class InputConnect:
 
     @staticmethod
     def check_user_input(filter_dict, is_reverse_sort, sort_parameter):
+        """
+        Проверяет коррекнтость данных, введенных пользователем. Если некорректно - выводит ошибку
+        и завершает работу программы
+        Args:
+            filter_dict (str | list[str]): Параметр фильтрации
+            is_reverse_sort (str): Обратный порядок сортировки
+            sort_parameter (str): Параметр сортировки
+
+        Returns:
+            str, bool: Параметр фильтрации, Обратный порядок сортировки
+        """
         if (filter_dict != "") and (not ":" in filter_dict):
             print("Формат ввода некорректен")
             exit()
@@ -93,6 +162,11 @@ class InputConnect:
         return filter_dict, is_reverse_sort
 
     def print_vacancy(self, data):
+        """
+        Подготавливает и печатает таблицу профессий в консоль
+        Args:
+            data (list[Vacancy]): Список объектов Vacancy
+        """
         self.tab = PrettyTable()
         self.tab._max_width = {x: 20 for x in (["№"] + list(ru_words.values()))}
         self.tab.field_names = ["№"] + list(ru_words.values())
@@ -107,6 +181,11 @@ class InputConnect:
         InputConnect.print_from_to(self)
 
     def print_from_to(self):
+        """
+        Печатает таблицу в определённом диапазоне и с определенными пунктами профессии,
+        если параметров нет - печается все
+
+        """
         if len(self.show_title) != 1:
             self.show_title = ["№"] + self.show_title
         else:
@@ -122,6 +201,15 @@ class InputConnect:
         print(self.tab.get_string(fields=self.show_title))
 
     def filter_table(self, data):
+        """
+        Фильтрует список объектов Vacancy, по данным, введенным пользователем.
+        Если Ничего не было найдено, то выводит это в консоль и завершает работу программы
+        Args:
+            data (list[Vacancy]): Список объектов Vacancy
+
+        Returns:
+            list: Отсортированный и фильтрованный список объектов Vacancy
+        """
         if len(self.filter_dict) != 1:
             new_data = list(filter(lambda x: filter_types[self.filter_dict[0]](x, self.filter_dict[1]), data))
         else:
@@ -132,6 +220,15 @@ class InputConnect:
         return InputConnect.sort_table(self, new_data)
 
     def sort_table(self, data):
+        """
+        Сортирует список объектов Vacancy, по данным, введенным пользователем.
+        Если пользователь ничего не вводил в параметр сортировки, то сортировка не будет применена
+        Args:
+            data(list[Vacancy]): Фильтрованный список объектов Vacancy
+
+        Returns:
+            list: Отсортированный и фильтрованный список объектов Vacancy
+        """
         if self.sort_parameter != "":
             new_data = sorter_types[self.sort_parameter](data, self.is_reverse_sort)
         else:
@@ -140,6 +237,15 @@ class InputConnect:
 
     @staticmethod
     def check_skills(row, words):
+        """
+        Проверяет наличие навыков, которые ввел пользователь
+        Args:
+            row (Vacancy): объект Vacancy
+            words (str | list[str]): навык(и), введенные пользователем
+
+        Returns:
+            bool: Наличие всех запрашиваемых навыков в профессии
+        """
         current_count = 0
         words = words.split(", ")
         check_count = len(words)
@@ -151,6 +257,11 @@ class InputConnect:
 
     @staticmethod
     def formatter(vac):
+        """
+        Форматирует данные в полях объекта Vacancy для печати в таблице
+        Args:
+            vac (Vacancy): Объект Vacancy
+        """
         vac.salary = "{0:,} - {1:,} ({2}) ({3})".format(int(float(vac.salary.salary_from)),
                                                         int(float(vac.salary.salary_to)),
                                                         ru_currency[vac.salary.salary_currency],
@@ -168,7 +279,25 @@ class InputConnect:
 
 
 class Vacancy:
+    """
+    Класс для предоставления вакансии
+    Attributes:
+        name (str): Назваеие профессии
+        description (str): Описание профессии
+        key_skills (list): Навыки, указанные в профессии
+        experience_id (str): Опыт работы
+        premium (str): Премиум-вакансия
+        employer_name (str): Название компании
+        salary (object(Salary)): Класс Salary
+        area_name (str): Расположение
+        published_at (str): Дата публикации
+    """
     def __init__(self, row):
+        """
+        Инициализирует объект Vacancy
+        Args:
+            row (dict): Словарь в котором содержиться строка вакансии, разделённая на различные пункты
+        """
         self.name = row["name"]
         self.description = row["description"]
         self.key_skills = row["key_skills"]
@@ -180,12 +309,31 @@ class Vacancy:
         self.published_at = row["published_at"]
 
     def __iter__(self):
+        """
+        Получение итератора для перебора объекта
+        """
         for each in self.__dict__.values():
             yield each
 
 
 class Salary:
+    """
+    Класс для предоставления зарплаты
+    Attributes:
+        salary_from (int): Нижняя граница вилки оклада
+        salary_to (int): Верхняя граница вилки оклада
+        salary_currency (str): Валюта оклада
+        salary_gross (str): Признак того что оклад указан до вычета налогов
+    """
     def __init__(self, salary_from, salary_to, salary_gross, salary_currency):
+        """
+        Инициализирует объект Salary
+        Args:
+            salary_from (int): Нижняя граница вилки оклада
+            salary_to (int): Верхняя граница вилки оклада
+            salary_gross (str): Признак того что оклад указан до вычета налогов
+            salary_currency (str): Валюта оклада
+        """
         self.salary_from = salary_from
         self.salary_to = salary_to
         self.salary_gross = salary_gross
