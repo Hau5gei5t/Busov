@@ -24,3 +24,6 @@ year = int(vac.published_at[:4])
 ... составил 0.675 секунды
 ![pycharm64_2RKlv8QNGH](https://user-images.githubusercontent.com/88937120/205498421-eb15aed9-87c0-4a4f-9c2a-61b6d27f0c28.png)
 ____
+## Задание 3.2.1 (1 балл)
+### Разделить данные
+![opera_IwjpdY2zL9](https://user-images.githubusercontent.com/88937120/206467657-ef755690-780e-46e6-a5dc-a73305038f72.png)
