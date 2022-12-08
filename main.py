@@ -1,6 +1,8 @@
 import generate_files
 import print_table
-import cProfile
+
+
+
 def main():
     while True:
         option = input("Вакансии или Статистика: ")
@@ -18,5 +20,6 @@ def main():
         else:
             print("Повторите ввод")
 
+
 if __name__ == '__main__':
-    cProfile.run('main()',sort='cumtime')
+    main()
