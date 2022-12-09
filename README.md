@@ -45,7 +45,7 @@ ____
 
 ## Задание 3.2.3 (3 балла)
 ### Concurrent futures
-При использовании Concurrent futures - 1 вызов занимал 0.671
+При использовании Concurrent futures - 1 вызов занимал 0.671 секунды
 ![pycharm64_qnB1H4hdjH](https://user-images.githubusercontent.com/88937120/206793796-7baa26d2-af8c-46b3-af23-e4170ba61851.png)
 
 ____
