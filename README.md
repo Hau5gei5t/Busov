@@ -27,3 +27,11 @@ ____
 ## Задание 3.2.1 (1 балл)
 ### Разделить данные
 ![opera_IwjpdY2zL9](https://user-images.githubusercontent.com/88937120/206467657-ef755690-780e-46e6-a5dc-a73305038f72.png)
+____
+## Задание 3.2.2 (2 балла)
+### Многопроцессорная обработка
+До использование многопроцессорности - 1 вызов занимал 2.209 секунды
+![pycharm64_kFCrDAIVoA](https://user-images.githubusercontent.com/88937120/206787254-10dcda41-788d-4513-ad6c-d7152b96a312.png)
+После использования многопроцессорности - 1 вызов занимал 0.685 секунды
+![pycharm64_8u9qVchfUe](https://user-images.githubusercontent.com/88937120/206787858-91ad672e-1345-4e84-8c48-9da1493467e6.png)
+
