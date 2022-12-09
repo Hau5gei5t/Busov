@@ -1,6 +1,6 @@
-from multiprocessing import Pool
 import pathlib
 import pandas as pd
+from concurrent.futures import ProcessPoolExecutor
 
 
 def upload_chunks(file_name):
@@ -60,9 +60,9 @@ def main(folder, prof):
         vac_counts_by_years = {}
         vac_salary_by_years = {}
         vacs_by_years = {}
-        with Pool(None) as pool:
+        with ProcessPoolExecutor(max_workers=2) as executor:
             for x in range(len(file_list)):
-                i = pool.apply_async(prepare_data, (file_list[x],prof)).get()
+                i = executor.submit(prepare_data, file_list[x], prof).result()
                 salary_by_years[i[0]] = i[1]
                 vac_counts_by_years[i[0]] = i[2]
                 vac_salary_by_years[i[0]] = i[3]
