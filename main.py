@@ -1,5 +1,6 @@
 import generate_files
 import print_table
+import cProfile
 
 
 
@@ -22,4 +23,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    cProfile.run("main()", sort="cumtime")
+
