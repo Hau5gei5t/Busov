@@ -1,6 +1,7 @@
 import csv
 import datetime
 import re
+import uploading_data
 
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, Side
@@ -64,6 +65,7 @@ class Report:
     Attributes:
         data (list): Входящие данные
     """
+
     def __init__(self, data):
         """
         Инициализвция класса Report
@@ -216,6 +218,7 @@ class DataSet:
         file_name (str): Название файла
         vacancies_objects (list[Vacancy]): Список объектов Vacancy
     """
+
     def __init__(self, file_name):
         """
         Инициализирует объект DataSet
@@ -284,6 +287,7 @@ class InputConnect:
         file_name (str): Название файла
         filter_dict (list[str]): Параметр фильтрации
     """
+
     def __init__(self):
         """
         Инициализирует класс InputConnect
@@ -319,9 +323,8 @@ class InputConnect:
             Доля вакансий по городам (в порядке убывания),
             Название профессии
         """
-        salary_by_cities, salary_by_years, \
-            vac_counts_by_years, vac_salary_by_years, \
-            vacs_by_cities, vacs_by_years = InputConnect.prepare_data(data, prof)
+        salary_by_cities, vacs_by_cities, salary_by_years, \
+        vacs_by_years, vac_salary_by_years, vac_counts_by_years = InputConnect.prepare_data(data, prof)
 
         print("Динамика уровня зарплат по годам:", salary_by_years)
         print("Динамика количества вакансий по годам:", vacs_by_years)
@@ -333,41 +336,26 @@ class InputConnect:
                 vacs_by_cities, prof]
 
     @staticmethod
-    def prepare_data(data, prof):
+    def prepare_data(data,prof):
         """
         Подготовка данных к печати в консоль
         Args:
             data (list[Vacancy]): Список объектов Vacancy
             prof (str): Название профессии
-
         Returns:
             list[dict]: Уровень зарплат по городам,
-            Динамика количества вакансий по годам,
-            Динамика количества вакансий по годам для выбранной профессии,
-            Динамика уровня зарплат по годам для выбранной профессии,
             Доля вакансий по городам,
-            Динамика количества вакансий по годам
         """
-        years = set()
+        salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years = uploading_data.main("csv_files", prof)
         area_dict = {}
         vacs_dict = {}
-        years = InputConnect.fill_years(data, years)
-        salary_by_years, vac_counts_by_years, vac_salary_by_years, vacs_by_years = InputConnect.create_dicts(years)
         for vac in data:
-            year = InputConnect.date_formatting_v1(vac)
-            salary_by_years[year].append(vac.salary.get_salary_ru())
-            vacs_by_years[year] += 1
-            if prof in vac.name:
-                vac_salary_by_years[year].append(vac.salary.get_salary_ru())
-                vac_counts_by_years[year] += 1
             InputConnect.fill_area_dict(area_dict, vac)
             InputConnect.fill_vacs_dict(vac, vacs_dict)
-        salary_by_years, vac_salary_by_years = InputConnect.prepare_salary_by_years(salary_by_years,
-                                                                                    vac_salary_by_years)
+
         salary_by_cities = InputConnect.prepare_salary_by_cities(area_dict, data)
         vacs_by_cities = InputConnect.prepare_vacs_by_cities(data, vacs_dict)
-        return salary_by_cities, salary_by_years, vac_counts_by_years, vac_salary_by_years, vacs_by_cities, \
-            vacs_by_years
+        return salary_by_cities, vacs_by_cities, salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years
 
     # @staticmethod
     # def date_formatting_main(vac):
@@ -512,6 +500,7 @@ class Vacancy:
         area_name (str): Расположение
         published_at (str): Дата публикации
     """
+
     def __init__(self, row):
         """
         Инициализирует объект Vacancy
@@ -533,6 +522,7 @@ class Salary:
         salary_currency (str): Валюта оклада
         salary_ru (int): Средний оклад в рублях
     """
+
     def __init__(self, salary_from, salary_to, salary_currency):
         """
         Инициализирует объект Salary
