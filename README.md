@@ -2,7 +2,9 @@
 ## Задание 2.3.2 (2 балла)
 ### Тестирование
 ![image](https://user-images.githubusercontent.com/88937120/205491804-43a447ad-a3a0-47ac-9168-35be2feb8bce.png)
+
 ____
+
 ## Задание 2.3.3 (2 балла)
 ### Профилирование
 - Вариант с datetime.strptime...
@@ -23,11 +25,15 @@ year = int(vac.published_at[:4])
 ```
 ... составил 0.675 секунды
 ![pycharm64_2RKlv8QNGH](https://user-images.githubusercontent.com/88937120/205498421-eb15aed9-87c0-4a4f-9c2a-61b6d27f0c28.png)
+
 ____
+
 ## Задание 3.2.1 (1 балл)
 ### Разделить данные
 ![opera_IwjpdY2zL9](https://user-images.githubusercontent.com/88937120/206467657-ef755690-780e-46e6-a5dc-a73305038f72.png)
+
 ____
+
 ## Задание 3.2.2 (2 балла)
 ### Многопроцессорная обработка
 До использование многопроцессорности - 1 вызов занимал 2.209 секунды
@@ -35,3 +41,11 @@ ____
 После использования многопроцессорности - 1 вызов занимал 0.685 секунды
 ![pycharm64_8u9qVchfUe](https://user-images.githubusercontent.com/88937120/206787858-91ad672e-1345-4e84-8c48-9da1493467e6.png)
 
+____
+
+## Задание 3.2.3 (3 балла)
+### Concurrent futures
+При использовании Concurrent futures - 1 вызов занимал 0.671
+![pycharm64_qnB1H4hdjH](https://user-images.githubusercontent.com/88937120/206793796-7baa26d2-af8c-46b3-af23-e4170ba61851.png)
+
+____
