@@ -1,6 +1,8 @@
 import pathlib
 import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
+import requests
+import xmltodict
 
 
 def upload_chunks(file_name):
@@ -68,3 +70,42 @@ def main(folder, prof):
                 vac_salary_by_years[i[0]] = i[3]
                 vacs_by_years[i[0]] = i[4]
         return salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years
+
+
+def get_years_currency(file_name):
+    """
+    Получает на вход файл, выбирает валюты, которые встречаются больше 5000 раз, находит самую раннюю и позднюю вакансию
+    в этом диапазоне с интервалом в 1 месяц получает курсы валют с сайта ЦБ РФ, сохраняет полученный результат в формате
+    .csv
+    Args:
+        file_name: название файла
+    """
+    result = pd.DataFrame()
+    pd.set_option("expand_frame_repr", False)
+    df = pd.read_csv(file_name)
+    freq = df['salary_currency'].value_counts().to_dict()
+    freq = {key: value for key, value in freq.items() if value >= 5000}
+    print(freq)
+    df = df[df["salary_currency"].isin(list(freq.keys()))]
+    date_range = [df["published_at"].min().split("-")[:2], df["published_at"].max().split("-")[:2]]
+    print(date_range)
+    row = {}
+    for year in range(int(date_range[0][0]), int(date_range[1][0]) + 1):
+        for month in range(int(date_range[0][1]), 13):
+            print(year, month)
+            try:
+                response = requests.get(
+                    rf"http://www.cbr.ru/scripts/XML_daily.asp?date_req=01/{str(month).zfill(2)}/{year}")
+            except Exception:
+                continue
+            response = xmltodict.parse(response.text)
+            for i in response['ValCurs']['Valute']:
+                if i['CharCode'] in list(freq.keys()):
+                    row["Date"] = f"{year}-{str(month).zfill(2)}"
+                    row[i['CharCode']] = round(float(i["Value"].replace(",", ".")) / int(i["Nominal"]), 7)
+            result = pd.concat([result, pd.DataFrame([row])])
+            if year == int(date_range[1][0]) and month == int(date_range[1][1]):
+                break
+            if month == 12:
+                break
+    result.to_csv("currency.csv", index=False)
