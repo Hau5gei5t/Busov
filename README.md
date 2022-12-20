@@ -49,3 +49,12 @@ ____
 ![pycharm64_qnB1H4hdjH](https://user-images.githubusercontent.com/88937120/206793796-7baa26d2-af8c-46b3-af23-e4170ba61851.png)
 
 ____
+
+## Задание 3.3.1 (1 балл)
+### Курсы валют
+Частотность с которой встречаются различные валюты, за этот период времени (2003–2022)
+![pycharm64_bkTILKLlsp](https://user-images.githubusercontent.com/88937120/208655751-e0009f14-b6bf-43f4-a543-3370fa105f90.png)
+Разделенный vacancies_dif_currencies.csv
+![pycharm64_HzcDOyvHMC](https://user-images.githubusercontent.com/88937120/208655894-e6eb3714-2f38-4aa1-a02f-9902ac359a37.png)
+
+____
