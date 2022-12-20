@@ -3,6 +3,9 @@ import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
 import requests
 import xmltodict
+import math
+
+pd.set_option("expand_frame_repr", False)
 
 
 def upload_chunks(file_name):
@@ -109,3 +112,57 @@ def get_years_currency(file_name):
             if month == 12:
                 break
     result.to_csv("currency.csv", index=False)
+
+
+def currency_conversion(file_name):
+    """
+    Обрабатывает данные из колонок ‘salary_from’, ‘salary_to’, ‘salary_currency’, и объединяет в одну колонку salary
+    Args:
+        file_name: имя файла
+    """
+    df = pd.read_csv(file_name)
+    result = df.loc[0:99].copy()
+    result["salary"] = result.apply(lambda row: get_mean(row), axis=1)
+    result["salary"] = result.apply(lambda row: exchange_salary(row), axis=1)
+    result.drop(labels=["salary_from", "salary_to", "salary_currency"], axis=1, inplace=True)
+    result = result[["name", "salary", "area_name", "published_at"]]
+    result.to_csv("new_100_vacancies.csv", index=False)
+
+
+def get_mean(row):
+    """
+    Возращает число в зависимости от заполненности полей ‘salary_from’, ‘salary_to’
+    Args:
+        row: Строка в df
+
+    Returns:
+        среднее между числами или ничего, если поля были пустыми
+    """
+    args = []
+    if not math.isnan(row["salary_from"]):
+        args.append(row["salary_from"])
+    if not math.isnan(row["salary_to"]):
+        args.append(row["salary_to"])
+    if len(args) != 0:
+        return sum(args) / len(args)
+    return
+
+
+def exchange_salary(row):
+    """
+    Сверяет дату появления вакансии с датой в файле содержащем курсы валют по датам,
+    находит необходимую валюту и умнажает на коэффициент
+    Args:
+        row: Строка в df
+
+    Returns:
+        значение в рублях
+    """
+    exchange = pd.read_csv("currency.csv")
+    if row["salary_currency"] in exchange.columns:
+        res = row["salary"] * float(exchange[exchange["Date"] == row["published_at"][:7]][row["salary_currency"]])
+        return round(res, 2)
+    return row["salary"]
+
+
+currency_conversion("vacancies_dif_currencies.csv")
