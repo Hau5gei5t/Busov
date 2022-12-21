@@ -1,9 +1,12 @@
 import pathlib
+import time
+
 import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
 import requests
 import xmltodict
 import math
+import json
 
 pd.set_option("expand_frame_repr", False)
 
@@ -165,4 +168,67 @@ def exchange_salary(row):
     return row["salary"]
 
 
-currency_conversion("vacancies_dif_currencies.csv")
+def get_page(page, half_day):
+    """
+    Отправляет запрос и получает выгрузку с сайта hh.ru по сто вакансий за страницу
+    Args:
+        page: Страница, для выгрузки
+        half_day: Вакансии после полудня
+
+    Returns:
+        текстовый json
+    """
+    if half_day:
+        params = {
+            "specialization": 1,
+            "found": 1,
+            "per_page": 100,
+            "page": page,
+            "date_from": f"2022-12-14T12:00:00+0300",
+            "date_to": f"2022-12-14T23:59:00+0300"
+        }
+    else:
+        params = {
+            "specialization": 1,
+            "found": 1,
+            "per_page": 100,
+            "page": page,
+            "date_from": f"2022-12-14T00:00:00+0300",
+            "date_to": f"2022-12-14T11:59:00+0300"
+        }
+    try:
+        req = requests.get('https://api.hh.ru/vacancies', params)
+        data = req.content.decode()
+        req.close()
+    except:
+        print("Запрос прошёл неудачно... пробую ещё")
+        return get_page(page)
+    print("Запрос прошёл успешно")
+    return data
+
+
+def set_vacancies():
+    """
+    Собирает данные с сайта HH.ru и сохраняет в csv файл
+    """
+    df = pd.DataFrame(columns=["name", "salary_from", "salary_to", "salary_currency", "area_name", "published_at"])
+    result = []
+    for i in range(2):
+        for page in range(0, 999):
+            js_obj = json.loads(get_page(page, i))
+            result.append(js_obj)
+            if (js_obj['pages'] - page) <= 1:
+                break
+            time.sleep(2)
+    for page in result:
+        for vac in page["items"]:
+            if vac["salary"] is None:
+                df.loc[len(df)] = [vac["name"], None,
+                                   None, None,
+                                   vac["area"]["name"], vac["published_at"]]
+            else:
+                df.loc[len(df)] = [vac["name"], vac["salary"]["from"],
+                                   vac["salary"]["to"], vac["salary"]["currency"],
+                                   vac["area"]["name"], vac["published_at"]]
+    df.to_csv("vacs_from_hh.csv", index=False)
+
