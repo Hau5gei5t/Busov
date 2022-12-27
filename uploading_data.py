@@ -44,7 +44,7 @@ def prepare_data(file_name, prof):
     df = pd.read_csv(file_name)
     a = df["published_at"].apply(lambda s: int(s[:4])).unique()
     salary_by_year = int(df[["salary_from", "salary_to"]].mean(axis=1).mean())
-    vac_counts_by_year = df[df["name"] == prof]
+    vac_counts_by_year = df[df["name"].str.contains(prof)]
     vac_salary_by_year = int(vac_counts_by_year[["salary_from", "salary_to"]].mean(axis=1).mean())
     return [a[0], salary_by_year, len(vac_counts_by_year), vac_salary_by_year, len(df)]
 

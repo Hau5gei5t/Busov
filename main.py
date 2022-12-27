@@ -11,7 +11,7 @@ def main():
         if option == "Статистика":
             params = generate_files.InputConnect()
             vacancies = generate_files.DataSet(params.file_name).vacancies_objects
-            generate_files.Report(params.print_data(vacancies, params.filter_dict)).generate_image()
+            generate_files.Report(params.print_data(vacancies, params.filter_dict)).generate_pdf()
             break
         elif option == "Вакансии":
             params = print_table.InputConnect()
@@ -23,5 +23,6 @@ def main():
 
 
 if __name__ == '__main__':
-    cProfile.run("main()", sort="cumtime")
+    main()
+    # cProfile.run("main()", sort="cumtime")
 

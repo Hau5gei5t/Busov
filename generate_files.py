@@ -1,7 +1,7 @@
 import csv
 import datetime
-import re
 import uploading_data
+import pandas as pd
 
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, Side
@@ -192,6 +192,8 @@ class Report:
         """
         if not os.path.exists("graph.png"):
             Report.generate_image(self)
+        if not os.path.exists("report.xlsx"):
+            Report.generate_excel(self)
         headers1 = ["Год", "Средняя зарплата", f"Средняя зарплата - {self.data[6]}", "Количество вакансий",
                     f"Количество вакансий - {self.data[6]}"]
         headers2 = ["Город", "Уровень зарплат", "Город", "Доля вакансий"]
@@ -239,12 +241,11 @@ class DataSet:
         Returns:
             list, list: Список названий заголовков, Список вакансий
         """
-        file_csv = open(file_name, encoding="utf_8_sig")
-        reader_csv = csv.reader(file_csv)
-        list_data = [x for x in reader_csv]
-        DataSet.check_file(list_data)
-        columns = list_data[0]
-        result = [x for x in list_data[1:] if len(x) == len(columns) and x.count('') == 0]
+        df = pd.read_csv(file_name)
+        DataSet.check_file(df)
+        columns = df.columns.to_list()
+        df.dropna(axis=0,how="any", inplace=True)
+        result = df.values.tolist()
         return columns, result
 
     @staticmethod
@@ -253,7 +254,7 @@ class DataSet:
         Проверяет файл на пустоту или отсутствие данных и если это подтведилось - выходит из программы
 
         Args:
-            list_data (list): Все строки в файле
+            list_data (DataFrame): Все строки в файле
         """
         if len(list_data) == 0:
             print("Пустой файл")
@@ -544,3 +545,4 @@ class Salary:
             int: Средний оклад в рублях
         """
         return self.salary_ru
+
