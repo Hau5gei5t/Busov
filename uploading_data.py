@@ -7,6 +7,7 @@ import requests
 import xmltodict
 import math
 import json
+from pandas import json_normalize
 
 pd.set_option("expand_frame_repr", False)
 
@@ -168,41 +169,32 @@ def exchange_salary(row):
     return row["salary"]
 
 
-def get_page(page, half_day):
+def get_page(page, hours):
     """
     Отправляет запрос и получает выгрузку с сайта hh.ru по сто вакансий за страницу
     Args:
         page: Страница, для выгрузки
-        half_day: Вакансии после полудня
+        hours: Вакансии после полудня
 
     Returns:
         текстовый json
     """
-    if half_day:
-        params = {
-            "specialization": 1,
-            "found": 1,
-            "per_page": 100,
-            "page": page,
-            "date_from": f"2022-12-14T12:00:00+0300",
-            "date_to": f"2022-12-14T23:59:00+0300"
-        }
-    else:
-        params = {
-            "specialization": 1,
-            "found": 1,
-            "per_page": 100,
-            "page": page,
-            "date_from": f"2022-12-14T00:00:00+0300",
-            "date_to": f"2022-12-14T11:59:00+0300"
-        }
+
+    params = {
+        "specialization": 1,
+        "found": 1,
+        "per_page": 100,
+        "page": page,
+        "date_from": f"2022-12-14T{str(hours).zfill(2)}:00:00+0300",
+        "date_to": f"2022-12-14T{str(hours + 1).zfill(2)}:59:00+0300"
+    }
     try:
         req = requests.get('https://api.hh.ru/vacancies', params)
         data = req.content.decode()
         req.close()
     except:
         print("Запрос прошёл неудачно... пробую ещё")
-        return get_page(page)
+        return get_page(page, hours)
     print("Запрос прошёл успешно")
     return data
 
@@ -211,24 +203,17 @@ def set_vacancies():
     """
     Собирает данные с сайта HH.ru и сохраняет в csv файл
     """
-    df = pd.DataFrame(columns=["name", "salary_from", "salary_to", "salary_currency", "area_name", "published_at"])
-    result = []
-    for i in range(2):
-        for page in range(0, 999):
+    df = pd.DataFrame()
+    for i in range(23):
+        for page in range(0, 22):
             js_obj = json.loads(get_page(page, i))
-            result.append(js_obj)
+            df = pd.concat((df, json_normalize(js_obj["items"])))
             if (js_obj['pages'] - page) <= 1:
                 break
             time.sleep(2)
-    for page in result:
-        for vac in page["items"]:
-            if vac["salary"] is None:
-                df.loc[len(df)] = [vac["name"], None,
-                                   None, None,
-                                   vac["area"]["name"], vac["published_at"]]
-            else:
-                df.loc[len(df)] = [vac["name"], vac["salary"]["from"],
-                                   vac["salary"]["to"], vac["salary"]["currency"],
-                                   vac["area"]["name"], vac["published_at"]]
-    df.to_csv("vacs_from_hh.csv", index=False)
+    df = df[["name", "salary.from", "salary.to", "salary.currency", "area.name", "published_at"]]
+    df.columns = ["name", "salary_from", "salary_to", "salary_currency", "area_name", "published_at"]
+    df.to_csv("vacs_from_hh1.csv", index=False)
+
+
 
