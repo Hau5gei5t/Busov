@@ -213,7 +213,7 @@ def set_vacancies():
             time.sleep(2)
     df = df[["name", "salary.from", "salary.to", "salary.currency", "area.name", "published_at"]]
     df.columns = ["name", "salary_from", "salary_to", "salary_currency", "area_name", "published_at"]
-    df.to_csv("vacs_from_hh1.csv", index=False)
+    df.to_csv("vacs_from_hh.csv", index=False)
 
 
 
