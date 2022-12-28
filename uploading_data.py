@@ -1,5 +1,6 @@
 import pathlib
 import time
+import sqlite3
 
 import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
@@ -25,7 +26,7 @@ def upload_chunks(file_name):
         data.iloc[:, :6].to_csv(rf"csv_files\year_{year}.csv", index=False)
 
 
-def prepare_data(file_name, prof,area_name):
+def prepare_data(file_name, prof, area_name):
     """
     Обрабатывает данные в чанке для дальнейшей работы
     Args:
@@ -50,7 +51,7 @@ def prepare_data(file_name, prof,area_name):
     return [a[0], salary_by_year, len(vac_counts_by_year), vac_salary_by_year, len(df)]
 
 
-def main(folder, prof,area_name):
+def main(folder, prof, area_name):
     """
     Обрабатывает чанки и выгружает обработанные данные
     Args:
@@ -116,7 +117,8 @@ def get_years_currency(file_name):
                 break
             if month == 12:
                 break
-    result.to_csv("currency.csv", index=False)
+    cnx = sqlite3.connect("currency.db")
+    result.to_sql("currency", con=cnx, index=False)
 
 
 def currency_conversion(file_name):
