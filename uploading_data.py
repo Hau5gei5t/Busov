@@ -25,7 +25,7 @@ def upload_chunks(file_name):
         data.iloc[:, :6].to_csv(rf"csv_files\year_{year}.csv", index=False)
 
 
-def prepare_data(file_name, prof):
+def prepare_data(file_name, prof,area_name):
     """
     Обрабатывает данные в чанке для дальнейшей работы
     Args:
@@ -42,14 +42,15 @@ def prepare_data(file_name, prof):
     """
     pd.set_option("expand_frame_repr", False)
     df = pd.read_csv(file_name)
+    df.dropna()
     a = df["published_at"].apply(lambda s: int(s[:4])).unique()
     salary_by_year = int(df[["salary_from", "salary_to"]].mean(axis=1).mean())
-    vac_counts_by_year = df[df["name"].str.contains(prof)]
+    vac_counts_by_year = df[(df["name"].str.contains(prof)) & (df["area_name"] == area_name)]
     vac_salary_by_year = int(vac_counts_by_year[["salary_from", "salary_to"]].mean(axis=1).mean())
     return [a[0], salary_by_year, len(vac_counts_by_year), vac_salary_by_year, len(df)]
 
 
-def main(folder, prof):
+def main(folder, prof,area_name):
     """
     Обрабатывает чанки и выгружает обработанные данные
     Args:
@@ -71,7 +72,7 @@ def main(folder, prof):
         vacs_by_years = {}
         with ProcessPoolExecutor(max_workers=2) as executor:
             for x in range(len(file_list)):
-                i = executor.submit(prepare_data, file_list[x], prof).result()
+                i = executor.submit(prepare_data, file_list[x], prof, area_name).result()
                 salary_by_years[i[0]] = i[1]
                 vac_counts_by_years[i[0]] = i[2]
                 vac_salary_by_years[i[0]] = i[3]

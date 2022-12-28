@@ -3,7 +3,6 @@ import print_table
 import cProfile
 
 
-
 def main():
     while True:
         option = input("Вакансии или Статистика: ")
@@ -11,7 +10,8 @@ def main():
         if option == "Статистика":
             params = generate_files.InputConnect()
             vacancies = generate_files.DataSet(params.file_name).vacancies_objects
-            generate_files.Report(params.print_data(vacancies, params.filter_dict)).generate_pdf()
+            generate_files.Report(params.print_data(vacancies, params.filter_dict, params.file_name, params.area_name)) \
+                .generate_pdf()
             break
         elif option == "Вакансии":
             params = print_table.InputConnect()
@@ -25,4 +25,3 @@ def main():
 if __name__ == '__main__':
     main()
     # cProfile.run("main()", sort="cumtime")
-

@@ -210,7 +210,7 @@ class Report:
                                         })
 
         config = pdfkit.configuration(wkhtmltopdf=r'I:\wkhtmltopdf\bin\wkhtmltopdf.exe')
-        pdfkit.from_string(pdf_template, 'report.pdf', configuration=config, options={"enable-local-file-access": None})
+        pdfkit.from_string(pdf_template, 'report_3_4_3.pdf', configuration=config, options={"enable-local-file-access": None})
 
 
 class DataSet:
@@ -244,7 +244,7 @@ class DataSet:
         df = pd.read_csv(file_name)
         DataSet.check_file(df)
         columns = df.columns.to_list()
-        df.dropna(axis=0,how="any", inplace=True)
+        df.dropna(axis=0, how="any", inplace=True)
         result = df.values.tolist()
         return columns, result
 
@@ -293,7 +293,7 @@ class InputConnect:
         """
         Инициализирует класс InputConnect
         """
-        self.file_name, self.filter_dict = InputConnect.get_params()
+        self.file_name, self.filter_dict, self.area_name = InputConnect.get_params()
 
     @staticmethod
     def get_params():
@@ -306,13 +306,15 @@ class InputConnect:
         # file_name = "vacancies_by_year.csv"  # использовал для генерации файла report.xlsx, graph.png
         filter_dict = input("Введите название профессии: ")
         # filter_dict = "Программист"  # использовал для генерации файла report.xlsx, graph.png
-        return file_name, filter_dict
+        area_name = input("Введите название города: ")
+        return file_name, filter_dict, area_name
 
     @staticmethod
-    def print_data(data, prof):
+    def print_data(data, prof, file_name=None, area_name=None):
         """
         Печатает подсчитанные данные в консоль и возвращает их
         Args:
+            file_name: Название файла
             data (list[Vacancy]): Список объектов Vacancy
             prof (str): Название профессии
 
@@ -325,7 +327,8 @@ class InputConnect:
             Название профессии
         """
         salary_by_cities, vacs_by_cities, salary_by_years, \
-        vacs_by_years, vac_salary_by_years, vac_counts_by_years = InputConnect.prepare_data(data, prof)
+            vacs_by_years, vac_salary_by_years, vac_counts_by_years = InputConnect.prepare_data(data, prof, file_name,
+                                                                                                area_name)
 
         print("Динамика уровня зарплат по годам:", salary_by_years)
         print("Динамика количества вакансий по годам:", vacs_by_years)
@@ -337,25 +340,39 @@ class InputConnect:
                 vacs_by_cities, prof]
 
     @staticmethod
-    def prepare_data(data,prof):
+    def prepare_data(data, prof, file_name=None, area_name=None):
         """
         Подготовка данных к печати в консоль
         Args:
+            file_name: название файла
             data (list[Vacancy]): Список объектов Vacancy
             prof (str): Название профессии
         Returns:
             list[dict]: Уровень зарплат по городам,
             Доля вакансий по городам,
         """
-        salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years = uploading_data.main("csv_files", prof)
-        area_dict = {}
-        vacs_dict = {}
-        for vac in data:
-            InputConnect.fill_area_dict(area_dict, vac)
-            InputConnect.fill_vacs_dict(vac, vacs_dict)
-
-        salary_by_cities = InputConnect.prepare_salary_by_cities(area_dict, data)
-        vacs_by_cities = InputConnect.prepare_vacs_by_cities(data, vacs_dict)
+        salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years = \
+            uploading_data.main("csv_files", prof, area_name)
+        df = pd.read_csv(file_name)
+        df.dropna(axis=0, how="any", inplace=True)
+        cities = ((df.groupby("area_name").size() / len(df))
+                  .where(lambda x: x >= 0.01)
+                  .dropna()
+                  .sort_values(ascending=False)
+                  .round(4))
+        sal = (df[df["area_name"]
+               .isin(cities.index.tolist())]
+               .assign(salary=(df["salary_currency"].map(currency_to_rub) * df["salary_from"] + df["salary_currency"]
+                               .map(currency_to_rub) * df["salary_to"]) / 2)
+               .groupby('area_name', as_index=False)["salary"]
+               .mean()
+               .sort_values(by="salary", ascending=False)
+               .round(0)
+               )
+        sal.index = list(sal["area_name"])
+        sal = sal["salary"]
+        salary_by_cities = dict(zip(sal.index.tolist()[:10], map(int,(sal.values.tolist()[:10]))))
+        vacs_by_cities = dict(zip(cities.index.tolist()[:10], cities.tolist()[:10]))
         return salary_by_cities, vacs_by_cities, salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years
 
     # @staticmethod
