@@ -128,12 +128,12 @@ def currency_conversion(file_name):
         file_name: имя файла
     """
     df = pd.read_csv(file_name)
-    result = df.loc[0:99].copy()
-    result["salary"] = result.apply(lambda row: get_mean(row), axis=1)
-    result["salary"] = result.apply(lambda row: exchange_salary(row), axis=1)
-    result.drop(labels=["salary_from", "salary_to", "salary_currency"], axis=1, inplace=True)
-    result = result[["name", "salary", "area_name", "published_at"]]
-    result.to_csv("new_100_vacancies.csv", index=False)
+    df["salary"] = df.apply(lambda row: get_mean(row), axis=1)
+    df["salary"] = df.apply(lambda row: exchange_salary(row), axis=1)
+    df.drop(labels=["salary_from", "salary_to", "salary_currency"], axis=1, inplace=True)
+    df = df[["name", "salary", "area_name", "published_at"]]
+    cnx = sqlite3.connect("new_vacs.db")
+    df.to_sql("vacs", con=cnx, index=False)
 
 
 def get_mean(row):
@@ -165,9 +165,16 @@ def exchange_salary(row):
     Returns:
         значение в рублях
     """
-    exchange = pd.read_csv("currency.csv")
-    if row["salary_currency"] in exchange.columns:
-        res = row["salary"] * float(exchange[exchange["Date"] == row["published_at"][:7]][row["salary_currency"]])
+    res = []
+    exchange = sqlite3.connect("currency.db")
+    cur = exchange.cursor()
+    # exchange = pd.read_csv("currency.csv")
+    cur.execute("SELECT name FROM PRAGMA_TABLE_INFO('currency');")
+    for i in cur.fetchall():
+        res.append(i[0])
+    if row["salary_currency"] in res:
+        cur.execute(f"SELECT {row['salary_currency']} FROM currency WHERE Date = ?", (row["published_at"][:7],))
+        res = row["salary"] * float(cur.fetchone()[0])
         return round(res, 2)
     return row["salary"]
 
@@ -219,4 +226,4 @@ def set_vacancies():
     df.to_csv("vacs_from_hh.csv", index=False)
 
 
-
+currency_conversion("vacancies_dif_currencies.csv")
