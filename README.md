@@ -58,3 +58,9 @@ ____
 ![pycharm64_HzcDOyvHMC](https://user-images.githubusercontent.com/88937120/208655894-e6eb3714-2f38-4aa1-a02f-9902ac359a37.png)
 
 ____
+
+## Задание 3.5.2 (1 балл)
+### Вакансии в БД
+![pycharm64_0VARkwcRB3](https://user-images.githubusercontent.com/88937120/209799488-eae0255d-f480-46ff-8e34-c463a8e7bed4.png)
+
+____
