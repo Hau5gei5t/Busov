@@ -61,6 +61,6 @@ ____
 
 ## Задание 3.5.2 (1 балл)
 ### Вакансии в БД
-![pycharm64_0VARkwcRB3](https://user-images.githubusercontent.com/88937120/209799488-eae0255d-f480-46ff-8e34-c463a8e7bed4.png)
+![pycharm64_WPpkDdPi4z](https://user-images.githubusercontent.com/88937120/209984471-3e5422c4-8976-420f-ae4f-ceab543b975c.png)
 
 ____
