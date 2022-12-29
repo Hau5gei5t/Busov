@@ -1,5 +1,7 @@
 import csv
 import datetime
+import sqlite3
+
 import uploading_data
 import pandas as pd
 
@@ -339,41 +341,70 @@ class InputConnect:
         return [salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years, salary_by_cities,
                 vacs_by_cities, prof]
 
+
+
     @staticmethod
-    def prepare_data(data, prof, file_name=None, area_name=None):
+    def prepare_data(prof, area_name=None):
         """
         Подготовка данных к печати в консоль
         Args:
-            file_name: название файла
-            data (list[Vacancy]): Список объектов Vacancy
+            area_name: Название региона
             prof (str): Название профессии
         Returns:
             list[dict]: Уровень зарплат по городам,
             Доля вакансий по городам,
         """
-        salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years = \
-            uploading_data.main("csv_files", prof, area_name)
-        df = pd.read_csv(file_name)
-        df.dropna(axis=0, how="any", inplace=True)
-        cities = ((df.groupby("area_name").size() / len(df))
-                  .where(lambda x: x >= 0.01)
-                  .dropna()
-                  .sort_values(ascending=False)
-                  .round(4))
-        sal = (df[df["area_name"]
-               .isin(cities.index.tolist())]
-               .assign(salary=(df["salary_currency"].map(currency_to_rub) * df["salary_from"] + df["salary_currency"]
-                               .map(currency_to_rub) * df["salary_to"]) / 2)
-               .groupby('area_name', as_index=False)["salary"]
-               .mean()
-               .sort_values(by="salary", ascending=False)
-               .round(0)
-               )
-        sal.index = list(sal["area_name"])
-        sal = sal["salary"]
-        salary_by_cities = dict(zip(sal.index.tolist()[:10], map(int,(sal.values.tolist()[:10]))))
-        vacs_by_cities = dict(zip(cities.index.tolist()[:10], cities.tolist()[:10]))
-        return salary_by_cities, vacs_by_cities, salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years
+        vacs = sqlite3.connect("new_vacs.db")
+        currency = sqlite3.connect("currency.db")
+        vacs_by_years = pd.read_sql("select count() as vacs_count,"
+                        "substr(published_at,1,4) as Year"
+                        " from vacs where salary not null"
+                        " group by substr(published_at,1,4)",vacs)
+        vac_counts_by_years = pd.read_sql(f"select count() as vac_count,"
+                        f" substr(published_at,1,4) as Year"
+                        f" from vacs where salary not null "
+                        f"and name like '%{prof}%' "
+                        f"and area_name = '{area_name}'"
+                        f" group by substr(published_at,1,4)",vacs)
+        salary_by_years = pd.read_sql(f"select floor(avg(salary)) as avg_salary,"
+                        f" substr(published_at,1,4) as Year"
+                        f" from vacs where salary not null"
+                        f" group by substr(published_at,1,4)", vacs)
+        vac_salary_by_years = pd.read_sql(f"select floor(avg(salary)) as avg_vac_salary,"
+                        f" substr(published_at,1,4) as Year"
+                        f" from vacs where salary not null"
+                        f" and name like '%{prof}%'"
+                        f" and area_name = '{area_name}'"
+                        f" group by substr(published_at,1,4)", vacs)
+        salary_by_cities = pd.read_sql(f"select area_name,"
+                        f"round(avg(salary),0) as avg_city_salary"
+                        f" from vacs where salary not null"
+                        f" group by area_name"
+                        f" having (cast(count(area_name) as float)"
+                        f"/cast((select count(*)from vacs where salary not null ) as float)) >=0.01"
+                        f" order by avg_city_salary DESC limit 10;", vacs)
+        vacs_by_cities = pd.read_sql(f"select area_name,"
+                        f"round(cast(count(area_name) as float)"
+                        f"/cast((select count(*)from vacs where salary not null ) as float),4) as percentage"
+                        f" from vacs where salary not null"
+                        f" group by area_name"
+                        f" having (cast(count(area_name) as float)"
+                        f"/cast((select count(*)from vacs where salary not null ) as float)) >=0.01"
+                        f" order by percentage desc limit 10;", vacs)
+        print("Динамика уровня зарплат по годам")
+        print(salary_by_years)
+        print("\nДинамика количества вакансий по годам")
+        print(vacs_by_years)
+        print("\nДинамика уровня зарплат по годам для выбранной профессии")
+        print(vac_salary_by_years)
+        print("\nДинамика количества вакансий по годам для выбранной профессии")
+        print(vac_counts_by_years)
+        print("\nУровень зарплат по городам (в порядке убывания)")
+        print(salary_by_cities)
+        print("\nДоля вакансий по городам (в порядке убывания)")
+        print(vacs_by_cities)
+        exit()
+        # return salary_by_cities, vacs_by_cities, salary_by_years, vacs_by_years, vac_salary_by_years, vac_counts_by_years
 
     # @staticmethod
     # def date_formatting_main(vac):
@@ -563,3 +594,4 @@ class Salary:
         """
         return self.salary_ru
 
+# InputConnect.prepare_data("Программист","Москва")

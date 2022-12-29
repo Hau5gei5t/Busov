@@ -42,7 +42,6 @@ def prepare_data(file_name, prof, area_name):
 
     """
     pd.set_option("expand_frame_repr", False)
-    cc = pd.read_csv("currency.csv")
     df = pd.read_csv(file_name)
     df = df[(~df['salary_from'].isnull() | ~df['salary_to'].isnull()) & ~df['salary_currency'].isnull()]
     df["salary"] = df["salary_from"].add(df["salary_to"], fill_value=0) / (2 - df.isnull().sum(axis=1))
@@ -133,20 +132,19 @@ def currency_conversion(file_name):
         file_name: имя файла
     """
     df = pd.read_csv(file_name)
-    df["salary"] = df["salary_from"].add(df["salary_to"], fill_value=0) / (2 - df.isnull().sum(axis=1))
+    df["published_at"] = df.apply(lambda x: x["published_at"][:7], axis=1)
+    df["salary"] = df.apply(lambda row: get_mean(row),axis=1)
     df["salary"] = df.apply(lambda row: exchange_salary(row), axis=1)
     df.drop(labels=["salary_from", "salary_to", "salary_currency"], axis=1, inplace=True)
     df = df[["name", "salary", "area_name", "published_at"]]
     cnx = sqlite3.connect("new_vacs.db")
-    df.to_sql("vacs", con=cnx, index=False)
-
+    df.to_sql("vacs", con=cnx, index=False, if_exists="replace")
 
 def get_mean(row):
     """
     Возращает число в зависимости от заполненности полей ‘salary_from’, ‘salary_to’
     Args:
         row: Строка в df
-
     Returns:
         среднее между числами или ничего, если поля были пустыми
     """
@@ -156,9 +154,8 @@ def get_mean(row):
     if not math.isnan(row["salary_to"]):
         args.append(row["salary_to"])
     if len(args) != 0:
-        return sum(args) / len(args)
+        return int(sum(args) / len(args))
     return
-
 
 def exchange_salary(row):
     """
@@ -229,3 +226,6 @@ def set_vacancies():
     df = df[["name", "salary.from", "salary.to", "salary.currency", "area.name", "published_at"]]
     df.columns = ["name", "salary_from", "salary_to", "salary_currency", "area_name", "published_at"]
     df.to_csv("vacs_from_hh.csv", index=False)
+
+
+
