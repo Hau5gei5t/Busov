@@ -42,12 +42,17 @@ def prepare_data(file_name, prof, area_name):
 
     """
     pd.set_option("expand_frame_repr", False)
+    cc = pd.read_csv("currency.csv")
     df = pd.read_csv(file_name)
-    df.dropna()
+    df = df[(~df['salary_from'].isnull() | ~df['salary_to'].isnull()) & ~df['salary_currency'].isnull()]
+    df["salary"] = df["salary_from"].add(df["salary_to"], fill_value=0) / (2 - df.isnull().sum(axis=1))
+    df["salary"] = df.apply(lambda row: exchange_salary(row), axis=1)
     a = df["published_at"].apply(lambda s: int(s[:4])).unique()
-    salary_by_year = int(df[["salary_from", "salary_to"]].mean(axis=1).mean())
-    vac_counts_by_year = df[(df["name"].str.contains(prof)) & (df["area_name"] == area_name)]
-    vac_salary_by_year = int(vac_counts_by_year[["salary_from", "salary_to"]].mean(axis=1).mean())
+    salary_by_year = int(df["salary"].mean())
+    vac_counts_by_year = df[(df["name"].str.contains(prof))
+        # & (df["area_name"] == area_name)
+    ]
+    vac_salary_by_year = int(vac_counts_by_year["salary"].mean())
     return [a[0], salary_by_year, len(vac_counts_by_year), vac_salary_by_year, len(df)]
 
 
@@ -71,7 +76,7 @@ def main(folder, prof, area_name):
         vac_counts_by_years = {}
         vac_salary_by_years = {}
         vacs_by_years = {}
-        with ProcessPoolExecutor(max_workers=2) as executor:
+        with ProcessPoolExecutor(max_workers=4) as executor:
             for x in range(len(file_list)):
                 i = executor.submit(prepare_data, file_list[x], prof, area_name).result()
                 salary_by_years[i[0]] = i[1]
@@ -128,7 +133,7 @@ def currency_conversion(file_name):
         file_name: имя файла
     """
     df = pd.read_csv(file_name)
-    df["salary"] = df.apply(lambda row: get_mean(row), axis=1)
+    df["salary"] = df["salary_from"].add(df["salary_to"], fill_value=0) / (2 - df.isnull().sum(axis=1))
     df["salary"] = df.apply(lambda row: exchange_salary(row), axis=1)
     df.drop(labels=["salary_from", "salary_to", "salary_currency"], axis=1, inplace=True)
     df = df[["name", "salary", "area_name", "published_at"]]
@@ -168,7 +173,7 @@ def exchange_salary(row):
     res = []
     exchange = sqlite3.connect("currency.db")
     cur = exchange.cursor()
-    # exchange = pd.read_csv("currency.csv")
+
     cur.execute("SELECT name FROM PRAGMA_TABLE_INFO('currency');")
     for i in cur.fetchall():
         res.append(i[0])
@@ -226,4 +231,3 @@ def set_vacancies():
     df.to_csv("vacs_from_hh.csv", index=False)
 
 
-currency_conversion("vacancies_dif_currencies.csv")
