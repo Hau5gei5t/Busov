@@ -64,3 +64,12 @@ ____
 ![pycharm64_WPpkDdPi4z](https://user-images.githubusercontent.com/88937120/209984471-3e5422c4-8976-420f-ae4f-ceab543b975c.png)
 
 ____
+
+## Задание 3.5.3 (4 балла)
+### Аналитика из БД
+![pycharm64_deapbMnvXg](https://user-images.githubusercontent.com/88937120/210005121-5099df33-7320-4e0b-9bcb-fa9080211f2c.png)
+![0](https://user-images.githubusercontent.com/88937120/210005146-23144753-d6ea-4e97-9c5f-23a156d3e3cd.png)
+![1](https://user-images.githubusercontent.com/88937120/210005156-b56f84ef-a38c-49cf-a1bc-6cb45f1d231d.png)
+![2](https://user-images.githubusercontent.com/88937120/210005164-fee71067-4a37-4b06-90c3-4475e8395860.png)
+![3](https://user-images.githubusercontent.com/88937120/210005189-6c9fd3f4-1e6a-41cd-80c7-36e766df790e.png)
+![4](https://user-images.githubusercontent.com/88937120/210005196-0dc16020-9296-4707-8c08-5f32fe296bda.png)
