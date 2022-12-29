@@ -210,7 +210,7 @@ class Report:
                                         })
 
         config = pdfkit.configuration(wkhtmltopdf=r'I:\wkhtmltopdf\bin\wkhtmltopdf.exe')
-        pdfkit.from_string(pdf_template, 'report.pdf', configuration=config, options={"enable-local-file-access": None})
+        pdfkit.from_string(pdf_template, 'report_3_4_3.pdf', configuration=config, options={"enable-local-file-access": None})
 
 
 class DataSet:

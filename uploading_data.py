@@ -50,8 +50,8 @@ def prepare_data(file_name, prof, area_name):
     a = df["published_at"].apply(lambda s: int(s[:4])).unique()
     salary_by_year = int(df["salary"].mean())
     vac_counts_by_year = df[(df["name"].str.contains(prof))
-        # & (df["area_name"] == area_name)
-    ]
+                            & (df["area_name"] == area_name)
+                            ]
     vac_salary_by_year = int(vac_counts_by_year["salary"].mean())
     return [a[0], salary_by_year, len(vac_counts_by_year), vac_salary_by_year, len(df)]
 
@@ -229,5 +229,3 @@ def set_vacancies():
     df = df[["name", "salary.from", "salary.to", "salary.currency", "area.name", "published_at"]]
     df.columns = ["name", "salary_from", "salary_to", "salary_currency", "area_name", "published_at"]
     df.to_csv("vacs_from_hh.csv", index=False)
-
-
